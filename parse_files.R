@@ -1,7 +1,9 @@
 # Wrapper to parse all ornitela files from a directory
 
+# Source function ----
+source("parse_data.R")
 
-
+# List files ----
 # First list files from directory matching some file naming criteria
 files <- list.files(path = 
                       "D:/Dropbox/Svenska_Högarna/data/",
@@ -56,6 +58,9 @@ for(i in 2:22){
     }
 }
 
+# hist(rawdata.df$depth_m, breaks = 100, xlim = c(0,100))
+# summary(rawdata.df$Latitude == 0)
+
 
 # Combine all GPS data to single data frame
 GPS.df <- parse.list[[1]][[2]]
@@ -81,6 +86,18 @@ for(i in 2:22){
     info.df <- rbind.data.frame(info.df, parse.list[[i]][[4]])
   }
 }
+
+
+# Combine all unfiltered raw data to single data frame
+rawdata.df.unfiltered <- parse.list[[1]][[5]]
+for(i in 2:22){
+  if(!is.null(parse.list[[i]][[5]])){
+    rawdata.df.unfiltered <- rbind.data.frame(rawdata.df.unfiltered,
+                                              parse.list[[i]][[5]])
+  }
+}
+
+
 
 
 
