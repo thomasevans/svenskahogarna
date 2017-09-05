@@ -70,6 +70,9 @@ for(i in 2:22){
   }
 }
 
+# Any duplicated?
+summary(duplicated.data.frame(GPS.df[,c(1,2)]))
+
 
 # Combine all dive data to single data frame
 dives.df <- parse.list[[1]][[3]]
@@ -78,6 +81,13 @@ for(i in 2:22){
     dives.df <- rbind.data.frame(dives.df, parse.list[[i]][[3]])
   }
 }
+
+# Any duplicated?
+x <- (duplicated.data.frame(dives.df[,c(1,13)]))
+xy <- dives.df[x,]
+
+dives.df.17994 <- dives.df[dives.df$device_id == 17994,]
+dives.df.17994$duplicated <- duplicated.data.frame(dives.df.17994[,c(1,13)])
 
 # Combine all info data to single data frame
 info.df <- parse.list[[1]][[4]]
