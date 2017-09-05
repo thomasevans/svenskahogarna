@@ -46,6 +46,7 @@ parse.file <- function(filename, device.name){
                                 gpsdata = 0,
                                 divedata = 0)
     out.list[[4]] <- details
+    out.list[[5]] <- NULL
   }else{
     # Fix data structure ----
     # str(rawdat)
@@ -59,10 +60,11 @@ parse.file <- function(filename, device.name){
     
     
     # Remove nonsense data -------
-    # f <-  (rawdata.df$depth_m<50) &  (rawdata.df$Latitude != 0)
+    rawdat.original <- rawdat
+    f <-  (rawdat$depth_m<50) &  (rawdat$Latitude != 0)
     # summary(f)
-    # f[is.na(f)] <- TRUE
-    # rawdata.df.f <- rawdata.df[f,]
+    f[is.na(f)] <- TRUE
+    rawdat <- rawdat[f,]
     
     
     # Sepperate out GPS and dive data ----
@@ -143,6 +145,7 @@ parse.file <- function(filename, device.name){
                                 gpsdata = nrow(gpsdat),
                                 divedata = nrow(divedat))
     out.list[[4]] <- details
+    out.list[[5]] <- rawdat.original
   }
   
   
