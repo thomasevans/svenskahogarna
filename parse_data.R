@@ -1,9 +1,9 @@
 # Parse Ornitela GPS + dive sensor data
-
+# 
 # filename <- paste(
 #   "D:/Dropbox/Svenska_Högarna/data/",
-#   "17993_20170903_083700.csv", sep = "")
-
+#   "17955_20170903_082900.csv", sep = "")
+# device.name <- "17955"
 # Wrap in function
 parse.file <- function(filename, device.name){
   
@@ -41,12 +41,13 @@ parse.file <- function(filename, device.name){
     out.list[[1]] <- NULL
     out.list[[2]] <- NULL
     out.list[[3]] <- NULL
+    out.list[[4]] <- NULL
     details <- cbind.data.frame(device = device.name,
                                 alldata = 0,
                                 gpsdata = 0,
                                 divedata = 0)
-    out.list[[4]] <- details
-    out.list[[5]] <- NULL
+    out.list[[5]] <- details
+    
   }else{
     # Fix data structure ----
     # str(rawdat)
@@ -79,6 +80,29 @@ parse.file <- function(filename, device.name){
     # Label dive events and give correct datatime for each record ----
     recs <- nrow(divedat)
     
+    # # Number timeblocks (records sharing the same date-time stamps)
+    # divedat$timeblock <- NULL
+    # divedat$block_rec <- NULL
+    # r <- 1
+    # rec <- 1
+    # divedat$timeblock[1] <- r
+    # divedat$block_rec[1] <- rec
+    # # Number records within timeblocks
+    # for(i in 2:nrow(divedat)){
+    #   if(divedat$UTC_datetime[i] == divedat$UTC_datetime[i-1]){
+    #     divedat$timeblock[i] <- r
+    #     divedat$block_rec[i] <- rec
+    #     rec <- rec +1
+    #     } else{
+    #     r <- r + 1
+    #     rec <- 1
+    #     divedat$timeblock[i] <- r
+    #     divedat$block_rec[i] <- rec
+    #     rec <- rec +1
+    #     }
+    #   }
+    
+    
     # Initialisation
     divedat$diveevent <- NULL
     divedat$UTC_datetime_new  <- NULL
@@ -102,7 +126,23 @@ parse.file <- function(filename, device.name){
         
       } else if((divedat$UTC_datetime[i] == (divedat$UTC_datetime[i-1]+4))|
                 (divedat$UTC_datetime[i] == (divedat$UTC_datetime[i-1]+3))|
-                (divedat$UTC_datetime[i] == (divedat$UTC_datetime_new[i-1]))){
+                (divedat$UTC_datetime[i] == (divedat$UTC_datetime_new[i-1]))|
+                (divedat$UTC_datetime[i] == (divedat$UTC_datetime_new[i-2]))|
+                 (divedat$UTC_datetime[i] == (divedat$UTC_datetime_new[i-1]+
+                                              as.difftime(1, units = "secs")))|
+                 (divedat$UTC_datetime[i] == (divedat$UTC_datetime_new[i-1]+
+                                              as.difftime(2, units = "secs")))|
+                  ((as.numeric(difftime(divedat$UTC_datetime[i], (divedat$UTC_datetime_new[i-1]))) < 15) &
+                   (divedat$depth_m[i] > 5) &
+                   (abs(divedat$depth_m[i]-divedat$depth_m[i-1]) < 2)
+                  )|
+                  ((as.numeric(difftime(divedat$UTC_datetime[i], (divedat$UTC_datetime_new[i-1]))) < 10) &
+                   (divedat$depth_m[i] > 1.5) &
+                   (abs(divedat$depth_m[i]-divedat$depth_m[i-1]) < 0.5)
+                  )
+                  
+                  
+                  ){
         # If new block of current dive do this
         divedat$diveevent[i] <- diveevent
         divedat$UTC_datetime_new[i] <- divedatetimec + 1
@@ -119,13 +159,18 @@ parse.file <- function(filename, device.name){
       }
     }
     
+    # hist(divedat$block_rec, breaks = 50)
+    
     # # Plotting data
-    # a <- c(3000:3200)
+    # a <- c(3000:3300)
     # # a <- divedat$diveevent == 549
+    # a <- c(650:900)
     # plot(divedat$UTC_datetime_new[a], -divedat$depth_m[a],
     #      # type = "b", col = "black")
     #      type = "b", col = as.numeric(divedat$diveevent[a]))
 
+    # divedat$delta_depth <- c(0, divedat$depth_m[-1]-divedat$depth_m[-nrow(divedat)])
+    
     # Drop extra column
     divedat <- divedat %>% select(-one_of(c("X")))
     
@@ -144,8 +189,8 @@ parse.file <- function(filename, device.name){
                                 alldata = nrow(rawdat),
                                 gpsdata = nrow(gpsdat),
                                 divedata = nrow(divedat))
-    out.list[[4]] <- details
-    out.list[[5]] <- rawdat.original
+    out.list[[4]] <- rawdat.original
+    out.list[[5]] <- details
   }
   
   
