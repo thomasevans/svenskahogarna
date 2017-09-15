@@ -34,6 +34,7 @@ n <- length(files)
 
 parse.list <- list()
 # i <- 1
+i <- 5
 x <- NULL
 for(i in 1:n){
   x <- parse.file(paste(
@@ -71,7 +72,7 @@ for(i in 2:22){
 }
 
 # Any duplicated?
-summary(duplicated.data.frame(GPS.df[,c(1,2)]))
+# summary(duplicated.data.frame(GPS.df[,c(1,2)]))
 
 
 # Combine all dive data to single data frame
@@ -81,44 +82,52 @@ for(i in 2:22){
     dives.df <- rbind.data.frame(dives.df, parse.list[[i]][[3]])
   }
 }
-
+# 
 # Any duplicated?
-x <- (duplicated.data.frame(dives.df[,c(1,13)]))
-xy <- dives.df[x,]
-
-dives.df.17994 <- dives.df[dives.df$device_id == 17994,]
-dives.df.17994$duplicated <- duplicated.data.frame(dives.df.17994[,c(1,13)])
+# x <- (duplicated.data.frame(dives.df[,c(1,13)]))
+# summary(x)
+# xy <- dives.df[x,]
+# 
+# dives.df.17994 <- dives.df[dives.df$device_id == 17994,]
+# dives.df.17994$duplicated <- duplicated.data.frame(dives.df.17994[,c(1,13)])
+# 
+# write.csv(dives.df.17994, file = "17994_20170903_083700_dives.csv")
 
 # Combine all info data to single data frame
-info.df <- parse.list[[1]][[4]]
+info.df <- parse.list[[1]][[5]]
 for(i in 2:22){
-  if(!is.null(parse.list[[i]][[4]])){
-    info.df <- rbind.data.frame(info.df, parse.list[[i]][[4]])
+  if(!is.null(parse.list[[i]][[5]])){
+    info.df <- rbind.data.frame(info.df, parse.list[[i]][[5]])
   }
 }
 
 
 # Combine all unfiltered raw data to single data frame
-rawdata.df.unfiltered <- parse.list[[1]][[5]]
+rawdata.df.unfiltered <- parse.list[[1]][[4]]
 for(i in 2:22){
-  if(!is.null(parse.list[[i]][[5]])){
+  if(!is.null(parse.list[[i]][[4]])){
     rawdata.df.unfiltered <- rbind.data.frame(rawdata.df.unfiltered,
-                                              parse.list[[i]][[5]])
+                                              parse.list[[i]][[4]])
   }
 }
 
+# 
+# str(parse.list[[5]][[5]])
+# 
+# i
 
-
-
-
-# Plotting data
-a <- c(700700:700900)
-# a <- dives.df$diveevent == 549
-plot(dives.df$UTC_datetime_new[a], -dives.df$depth_m[a],
-     # type = "b", col = "black")
-     type = "b", col = as.numeric(dives.df$diveevent[a]))
-# files
-
+# 
+# # Plotting data
+# a <- c(701000:701600)
+# a <- c(81000:84460)
+# a <- dives.df$device_id == "17482"
+# # a <- dives.df$diveevent == 549
+# plot(dives.df$UTC_datetime_new[a], -dives.df$depth_m[a],
+#      # type = "b", col = "black")
+#      # ylim = c(-5, 0.5),
+#      type = "b", col = as.numeric(dives.df$diveevent[a]))
+# # files
+# 
 
 # Make unique dive IDs -----
 diven <- 0
@@ -133,7 +142,80 @@ for(i in 1:22){
  
 }
 
-max(dives.df$diveevent)
+# max(dives.df$diveevent)
+
+
+
+
+
+# Ispect and clean dive data ------
+devices <- unique(dives.df$device_id)
+# i
+# ?pdf
+pdf("dives_1h_new_redone4.pdf", paper = "a4r")
+n <- 1
+# i <- 18
+for(i in 1:length(devices)){
+  a <- dives.df$device_id == devices[i]
+  # summary(a)
+  start.time <- min(dives.df$UTC_datetime_new[a])
+  end.time <- max(dives.df$UTC_datetime_new[a])
+  tot_time <- as.numeric(difftime(end.time, start.time, units = "hours"))
+  tot_time_round <- ceiling(tot_time)
+  c <- start.time
+  for(ix in 1:tot_time_round){
+    
+    hour <- as.difftime(1, units = "hours")
+    b <- a & (dives.df$UTC_datetime_new > c) &
+      (dives.df$UTC_datetime_new < (c + hour))
+    # sum(b)
+    if(sum(b)>0){
+      
+      plot(dives.df$UTC_datetime_new[b], -dives.df$depth_m[b],
+           # type = "b", col = "black")
+           # ylim = c(-5, 0.5),
+           main = paste("Device: ", devices[i], "  start time:", c,
+                        "\n plot", n),
+           type = "b", col = as.numeric(dives.df$diveevent[b]),
+           cex = 0.5
+           )
+      n <- n+1
+      
+    }
+    
+    c <- c + hour
+    
+  }
+  
+ 
+}
+dev.off()
+
+
+
+# Exclude periods of dodgy dive data ------
+# ?filter()
+
+dives.df.filtered <- filter(dives.df,
+                            !(device_id == "17482" &
+                               UTC_datetime > as.POSIXct(
+                                 "2017-07-09 20:40", tz = "UTC")) &
+                              !(device_id == "17993" &
+                                  (UTC_datetime > as.POSIXct(
+                                    "2017-07-10 20:50", tz = "UTC")) &
+                              (UTC_datetime < as.POSIXct(
+                                "2017-07-11 01:30", tz = "UTC"))) &
+                            !(device_id == "17993" &
+                                UTC_datetime > as.POSIXct(
+                                  "2017-07-12 15:00", tz = "UTC")) &
+                            !(device_id == "17994" &
+                                UTC_datetime > as.POSIXct(
+                                  "2017-07-17 00:00", tz = "UTC"))
+                            )
+# str(dives.df)
+
+length(unique(dives.df$diveevent))
+length(unique(dives.df.filtered$diveevent))
 
 
 # Output tables to database ------
@@ -171,7 +253,7 @@ sqlSave(gps.db, GPS.df,
 
 # Dive data
 str(dives.df)
-sqlSave(gps.db, dives.df,
+sqlSave(gps.db, dives.df.filtered,
         tablename = "ornitela_dives",
         append = FALSE, rownames = FALSE, colnames = FALSE,
         verbose = FALSE, safer = TRUE, addPK = FALSE, fast = TRUE,
