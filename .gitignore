@@ -24,3 +24,7 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 17994_20170903_083700_dives.csv
+dive_data.R
+
+# pdf files
+*.pdf
