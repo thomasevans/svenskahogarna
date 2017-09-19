@@ -25,6 +25,6 @@ vignettes/*.pdf
 .Rproj.user
 17994_20170903_083700_dives.csv
 dive_data.R
-
 # pdf files
 *.pdf
+bsbd-0.9.3_3035_clip.tif
