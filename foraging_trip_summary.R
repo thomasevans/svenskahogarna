@@ -7,9 +7,10 @@ library("RODBC")
 
 gps.db <- odbcConnectAccess2007('D:/Dropbox/Svenska_Högarna/db/svenskahogarna.accdb')
 
-points <- sqlQuery(gps.db, query="SELECT gps_trips.*, ornitela_gps.Latitude, ornitela_gps.Longitude
-FROM gps_trips INNER JOIN ornitela_gps ON (gps_trips.UTC_datetime = ornitela_gps.UTC_datetime) AND (gps_trips.device_id = ornitela_gps.device_id)
-ORDER BY gps_trips.device_id, gps_trips.UTC_datetime;")
+points <- sqlQuery(gps.db, query="SELECT gps_trips.*, ornitela_gps.Latitude, ornitela_gps.Longitude, ornitela_gps.speed_km_h
+FROM gps_trips INNER JOIN ornitela_gps ON (gps_trips.device_id = ornitela_gps.device_id) AND (gps_trips.UTC_datetime = ornitela_gps.UTC_datetime)
+                   ORDER BY gps_trips.device_id, gps_trips.UTC_datetime;
+                   ")
 
 
 # Check datetime format etc (including timezone)
@@ -22,15 +23,35 @@ library(lubridate)
 points$UTC_datetime <- force_tz(points$UTC_datetime, tzone = "UTC")
 
 
-# Summarise trips ------
-# Use plyr::summarise
+
+
+library(plyr)
+library(dplyr)
 
 # Remove points that are not on a trip
 points2 <- filter(points, !is.na(trip_id))
 
 
-library(plyr)
-library(dplyr)
+
+# Inspect speed data to decide on speed threshold for flight ----
+hist(points2$speed_km_h, breaks = 100,
+     xlim = c(3,100), ylim = c(0,100))
+abline(v=18, col = "red")
+# summary(points$speed_km_h >30)
+
+ms_speed <- points2$speed_km_h*1000/60/60
+hist(ms_speed, breaks = 100, xlim = c(1,25),
+     ylim = c(0,100))
+
+5/1000*60*60
+
+# 5 ms-1, or 18 kph looks good.
+
+
+# Summarise trips ------
+# Use plyr::summarise
+
+
 
 trip.summary <- ddply(points2, .(device_id, trip_id),
                       summarise,
@@ -47,6 +68,13 @@ trip.summary <- ddply(points2, .(device_id, trip_id),
                       duration_h = as.numeric(difftime(datetime_end,
                                                        datetime_start,
                                                        units = "hours")),
+                      flight_points_n = sum(speed_km_h[-1]>18),
+                      flight_time_s_total = sum(
+                        time_diff_s_last[-1][speed_km_h[-1]>18]),
+                      
+                      
+                      
+                      
                       interval_s_first = first(time_diff_s_last),
                       interval_s_last  = last(time_diff_s_next),
                       interval_s_min = min(time_diff_s_last),
@@ -73,6 +101,12 @@ str(trip.summary)
 hist(trip.summary$nest_dist_max, breaks = 50)
 hist(trip.summary$duration_h/24, breaks = 50)
 
+hist(trip.summary$flight_time_s_total/60/60,
+     breaks = 100,
+     xlim = c(0,2))
+hist(trip.summary$flight_time_s_total/
+       trip.summary$duration_s, breaks = 20,
+     ylim = c(0,70))
 
 # Output to database ------
 
