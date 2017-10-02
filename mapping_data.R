@@ -35,12 +35,42 @@ ORDER BY dives.device_id, dives.diveevent;")
 
 
 # Bathymetry data ------
+library(rgdal)
+
 # Get into some format that it can be plot
 
 
 
-# Good coastline data
+# Good coastline data -------
 
+# Data from Openstreetmap at http://overpass-turbo.eu/#
+# Querry
+# "[out:json]
+# [timeout:25]
+# ;
+# (
+#   way
+#   ["natural"="coastline"]
+#   (58.950008233357,18.536682128906,59.86688319521,20.231323242188);
+# );
+# out;
+# >;
+# out skel qt;"
+
+
+# Tips from here https://stackoverflow.com/a/30618775/1172358
+ogrInfo("coastline.geojson", "OGRGeoJSON")
+coast_polygons <- readOGR("coastline.geojson", "OGRGeoJSON", require_geomType="wkbPolygon")
+
+coast_lines <- readOGR("coastline.geojson", "OGRGeoJSON", require_geomType="wkbLineString")
+
+
+
+# Check how this looks
+plot(coast_polygons, col = "black")
+plot(coast_lines, col = "red", add = TRUE)
+plot(coast_points, col = "blue", add = TRUE)
+# ?polygon
 
 # Mapping foraging trips -------
 
