@@ -36,3 +36,6 @@ deployment_summaries.csv
 deployment_summaries_edited.xlsx
 trips.png
 ~$deployment_summaries_edited.xlsx
+mapping_data.R
+# SVG image files
+*.svg
