@@ -39,3 +39,9 @@ trips.png
 mapping_data.R
 # SVG image files
 *.svg
+bsbd-0.9.3_3035_clip.tif.aux.xml
+# Shape and associated files
+*.shp
+*.dbf
+*.shx
+histograms.png
