@@ -483,6 +483,21 @@ g_ver_25 <- getverticeshr(kud, 25)
 # Orange - guillemots #d95f02
 # purple - razorbills #7570b3
 
+str(g_ver_25)
+
+
+# Save Kernels out to shp files
+writeOGR(obj=g_ver_25, dsn="guillemot_kernel_25_percent.shp", layer="g_ver_25", driver="ESRI Shapefile") # this is in geographical projection
+writeOGR(obj=g_ver_50, dsn="guillemot_kernel_50_percent.shp", layer="g_ver_50", driver="ESRI Shapefile") # this is in geographical projection
+writeOGR(obj=g_ver_95, dsn="guillemot_kernel_95_percent.shp", layer="g_ver_95", driver="ESRI Shapefile") # this is in geographical projection
+
+writeOGR(obj=r_ver_25, dsn="razorbill_kernel_25_percent.shp", layer="r_ver_25", driver="ESRI Shapefile") # this is in geographical projection
+writeOGR(obj=r_ver_50, dsn="razorbill_kernel_50_percent.shp", layer="r_ver_50", driver="ESRI Shapefile") # this is in geographical projection
+writeOGR(obj=r_ver_95, dsn="razorbill_kernel_95_percent.shp", layer="r_ver_95", driver="ESRI Shapefile") # this is in geographical projection
+
+
+
+
 
 
 
@@ -500,6 +515,7 @@ plot(all_coast_baltic2, xlim = range(pointsf$Longitude),
      lty = 1)
 
 
+
 # Add axis
 axis(side=(1),las=1, cex.lab = 0.7, cex.axis =0.7, cex = 0.7, padj = -1.5, hadj = NA)
 axis(side=(2),las=1, cex.lab = 0.7, cex.axis =0.7, cex = 0.7, padj = 0.2, hadj = 0.8)
@@ -507,17 +523,17 @@ axis(side=(2),las=1, cex.lab = 0.7, cex.axis =0.7, cex = 0.7, padj = 0.2, hadj =
 # Outline box
 box(lwd=2)
 
-plot(ver_95,
+plot(r_ver_95,
      lwd = 0.6,
      add = TRUE,
      col = addalpha("#7570b3", 0.2),
      lty = 0)
-plot(ver_50,
+plot(r_ver_50,
      lwd = 0.8,
      add = TRUE,
      col = addalpha("#7570b3", 0.2),
      lty = 0)
-plot(ver_25,
+plot(r_ver_25,
      lwd = 1.2,
      add = TRUE,
      col = addalpha("#7570b3", 0.2),
@@ -577,11 +593,65 @@ dev.off()
 
 
 
-
-
-
+# 
+# # Plotting over bathymetry data -----
 # 
 # 
+# 
+# 
+# # 9-class YlGnBu from http://colorbrewer2.org/?type=sequential&scheme=YlGnBu&n=9
+# breakpoints <- -1*c(0,5,10,20,30,40,60,80,100,125)
+# colors <- rev(c('#ffffd9','#edf8b1','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#253494','#081d58'))
+# colors <- addalpha(colors, 0.8)
+# 
+# 
+# 
+# # png("bath_dives.png", width = 6, height = 6,
+# # res = 600, units = "in")
+# # svg("bath_dives.svg", width = 6, height = 6,
+# #     # fallback_resolution = 600,
+# #     antialias = "none")
+# # # ?svg
+# 
+# # plot(volcanoR,breaks=breakpoints,)
+# # str(coordinates(dives))
+# all_coast_baltic2.reprj <- spTransform(all_coast_baltic2, CRS(projection(bath2)))
+# 
+# # plot(all_coast_baltic2.reprj, col= "dark grey", bg = NA,
+# #      main = "",
+# #      border = "black",
+# #      lwd = 0.5,
+# #      lty = 1,
+# #      add = FALSE)
+# 
+# plot(bath2,
+#      # xlim = range(dives$Longitude),
+#      # ylim = range(dives$Latitude),
+#      bg = NA,
+#      # main = title.text,
+#      # border = "black",
+#      # lwd = 0.5,
+#      breaks = breakpoints,
+#      col = colors,
+#      # main = "",
+#      axes = FALSE,
+#      add = FALSE)
+# 
+# plot(all_coast_baltic2.reprj,
+#      add = TRUE, col = "grey")
+# 
+# # Define shapefile's current CRS
+# projection(g_ver_25) <- CRS("+proj=longlat +ellps=WGS84")
+# 
+# projection(g_ver_25)
+# g_ver_25.reprj <- spTransform(g_ver_25, CRS(projection(bath)))
+# 
+# plot(g_ver_25.reprj, addalpha("red",0.4))
+# 
+# 
+# 
+# # 
+# # 
 # #
 # 
 # hist(dives$depth_m_max)
