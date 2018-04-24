@@ -442,49 +442,78 @@ library("sp")
 
 # Get in format needed for adehabitatHR
 # xy <- t(rbind(coords[f,1],coords[f,2]))
-xy <- cbind.data.frame(points_razorbill_sample$Longitude,
+xy_r <- cbind.data.frame(points_razorbill_sample$Longitude,
                        points_razorbill_sample$Latitude)
-names(xy) <- c("x", "y")
-coordinates(xy) <- c("x","y")
+names(xy_r) <- c("x", "y")
+coordinates(xy_r) <- c("x","y")
+
+# geographic coordinate system of points
+c1 <- CRS("+proj=longlat +ellps=sphere") 
+
+# define as SpatialPoints
+xy_r <- SpatialPoints(xy_r, proj4string=c1) 
+
 
 # # Make kernel object
 
 # ?kernelUD
 
 par(mfrow=c(1,1))
-kud <- (kernelUD(xy, grid = 2000))
+kud_r <- (kernelUD(xy_r, grid = 2000))
 
-image(kud)
-r_ver_95 <- getverticeshr(kud, 95)
-r_ver_50 <- getverticeshr(kud, 50)
-r_ver_25 <- getverticeshr(kud, 25)
+image(kud_r)
+r_ver_95 <- getverticeshr(kud_r, 95)
+r_ver_50 <- getverticeshr(kud_r, 50)
+r_ver_25 <- getverticeshr(kud_r, 25)
 
 # ?kernelUD
 
 # Guillemots
-xy <- cbind.data.frame(points_guillemot_sample$Longitude,
+xy_g <- cbind.data.frame(points_guillemot_sample$Longitude,
                        points_guillemot_sample$Latitude)
-names(xy) <- c("x", "y")
-coordinates(xy) <- c("x","y")
+names(xy_g) <- c("x", "y")
+coordinates(xy_g) <- c("x","y")
+
+# geographic coordinate system of your points
+c1 <- CRS("+proj=longlat +ellps=sphere") 
+
+# define as SpatialPoints
+xy_g <- SpatialPoints(xy_g, proj4string=c1) 
 
 # # Make kernel object
 
 # ?kernelUD
 
 par(mfrow=c(1,1))
-kud <- (kernelUD(xy, grid = 2000))
+kud_g <- (kernelUD(xy_g, grid = 2000))
 
-image(kud)
-g_ver_95 <- getverticeshr(kud, 95)
-g_ver_50 <- getverticeshr(kud, 50)
-g_ver_25 <- getverticeshr(kud, 25)
+#projected
+# kud <- (kernelUD(p1, grid = 2000))
+# str(g_ver_95)
+# ?kver2spol
 
 
+image(kud_g)
+g_ver_95 <- getverticeshr(kud_g, 95)
+g_ver_50 <- getverticeshr(kud_g, 50)
+g_ver_25 <- getverticeshr(kud_g, 25)
+
+# str(kud)
+# ?kernelUD
+# proj(g_ver_95)attr(r_ver_25, "projection")
+# attr(g_ver_95, "projection")
+
+
+# ?getverticeshr
 # Orange - guillemots #d95f02
 # purple - razorbills #7570b3
 
-str(g_ver_25)
+# str(g_ver_25)
 
+# ?writeOGR
+
+# attr(r_ver_25, "projection")
+# proj(r_ver_25)
 
 # Save Kernels out to shp files
 writeOGR(obj=g_ver_25, dsn="guillemot_kernel_25_percent.shp", layer="g_ver_25", driver="ESRI Shapefile") # this is in geographical projection
